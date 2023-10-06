@@ -11,7 +11,10 @@ let mic, fft;
 let x, y;
 
 function preload() {
-  song = loadSound('../assets/thejudge.mp3');
+  // song = loadSound('../assets/thejudge.mp3');
+  song = loadSound(
+    'https://tommyedmunds.github.io/the-judge-visualizer/assets/thejudge.mp3'
+  );
 }
 
 function setup() {
