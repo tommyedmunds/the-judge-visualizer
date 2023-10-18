@@ -68,12 +68,12 @@ function draw() {
           p.x = x;
           p.y += sin(a);
           stroke(color(random(0, 255), random(0, 255), random(0, 255)));
-          strokeWeight(3);
+          strokeWeight(4);
           point(x * 3, random(0, p.y) * 2);
         }
       } else {
         stroke('white');
-        strokeWeight(3);
+        strokeWeight(4);
         point(p.x, p.y);
       }
 
