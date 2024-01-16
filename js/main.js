@@ -1,6 +1,6 @@
 const particles = [];
 const particlesSpectrum = [];
-const num = 300;
+const num = 800;
 
 const noiseScale = 10;
 
@@ -51,15 +51,20 @@ function draw() {
   const randColor2 = color(random(0, 255), random(0, 255), random(0, 255));
 
   // use this background call for thejudge.mp3
-  background(0, 150);
+  // background(255);
+  background(0);
   // background(0, 25);
 
   let waveform = fft.waveform();
 
   if (song.isPlaying()) {
+    beginShape();
     for (i = 0; i < waveform.length / 2; i++) {
       x = map(i, 0, waveform.length, 0, displayWidth);
       y = map(waveform[i], -1, 1, 0, displayHeight);
+
+      const vertexX = map(i, 0, waveform.length, 0, width);
+      const vertexY = map(waveform[i], -1, 1, 0, height);
 
       diffY = map(waveform[i] * 2, -1, 1, 0, displayWidth);
 
@@ -69,24 +74,61 @@ function draw() {
         let a = TAU * n;
 
         if (frameCount % 2 === 0 && y > 630) {
-          for (let i = 1; i < height * 0.1; i++) {
-            p.x = x;
-            p.y += sin(a);
-            // stroke(color(random(0, 255), random(0, 255), random(0, 255)));
-            const amplifiedX = x * 3;
-            const amplifiedY = random(0, p.y) * 2;
+          const amplifiedX = x * 3;
+          const amplifiedY = random(0, p.y) * 2;
+          // for (let i = 1; i < height * 0.1; i++) {
+          //   p.x = x;
+          //   p.y += sin(a);
 
-            if (amplifiedX > 0 && amplifiedX < displayWidth) {
-              stroke(randColor1);
-              strokeWeight(strWeight);
-              point(amplifiedX, amplifiedY);
-            }
-            // point(random(0, width), y);
-          }
+          //   const amplifiedX = x * 3;
+          //   const amplifiedY = random(0, p.y) * 2;
+
+          //   if (amplifiedX > 0 && amplifiedX < displayWidth) {
+          //     // stroke(randColor1);
+          //     // old viz
+          //     // stroke(color(random(0, 255), random(0, 255), random(0, 255)));
+          //     // strokeWeight(strWeight);
+          //     // point(amplifiedX, amplifiedY);
+
+          //     //
+          //     //
+          //     // new viz
+          //     // const absDistance = Math.abs(displayWidth / 2 - y);
+
+          //     // // take distance from center of screen and scale it
+          //     // const scaledStroke = map(absDistance, 0, displayHeight / 2, 3, 10, true);
+          //     // console.log(y, absDistance, displayHeight / 2, scaledStroke);
+          //     // stroke(randColor1);
+          //     // strokeWeight(scaledStroke);
+          //     // // point(amplifiedX * 2, amplifiedY);
+          //     // point(amplifiedY * 2, amplifiedX);
+          //   }
+          //   // point(random(0, width), y);
+          // }
+          vertex(
+            randomNum % 2 === 0 ? amplifiedX : amplifiedY,
+            randomNum % 2 === 0 ? amplifiedY : amplifiedX
+          );
         } else {
+          // old viz
           // stroke('white');
           // strokeWeight(4);
           // point(p.x, p.y);
+          //
+          //
+          // new one
+          //
+          //
+          // if (p.y > height || p.y < 0) p.y = 0;
+          // p.x = x;
+          // p.y += sin(a);
+          // stroke(randColor2);
+          // strokeWeight(strWeight);
+          // // point(randomNum, p.y);
+          // // point(randomNum, p.y);
+          // point(diffY, x * 2);
+          //
+          // a more novel approach
           if (p.y > height || p.y < 0) p.y = 0;
           p.x = x;
           // p.y += sin(a);
@@ -94,7 +136,8 @@ function draw() {
           strokeWeight(strWeight);
           // point(randomNum, p.y);
           // point(randomNum, p.y);
-          point(diffY, randomNum);
+          // point(diffY, randomNum);
+          vertex(diffY, randomNum);
         }
 
         if (song.isPlaying()) {
@@ -103,6 +146,7 @@ function draw() {
         }
       }
     }
+    endShape();
   }
 }
 
