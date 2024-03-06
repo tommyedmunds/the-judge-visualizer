@@ -1,16 +1,10 @@
-const particles = [];
-const particlesSpectrum = [];
-const num = 800;
-
-const noiseScale = 10;
-
 let song, analyzer;
 let r, g, b;
 let fft;
 
-let x, y, diffY;
+let prevYspec = 0;
 
-const strWeight = 7;
+let xSpec, ySpec;
 
 function preload() {
   song = loadSound(
@@ -18,8 +12,29 @@ function preload() {
   );
 }
 
+let cells = [];
+let history = [];
+let ruleSet;
+let w = 10;
+
+// a selection of rules
+let ruleCollection = [
+  13, 18, 22, 25, 24, 45, 60, 73, 75, 77, 82, 86, 89, 90, 100, 99, 102, 101, 110, 105,
+  118, 124, 126, 129, 135, 137, 146, 150, 149, 153, 169, 182, 193, 210, 225, 236, 252,
+  254, 244, 241, 225, 217, 216, 215, 2, 3, 5, 88, 90, 12, 123, 49, 44, 48,
+];
+
+let startRule = 68;
+
+function setRules(ruleValue) {
+  ruleSet = ruleValue.toString(2);
+  while (ruleSet.length < 8) {
+    ruleSet = '0' + ruleSet;
+  }
+}
+
 function setup() {
-  createCanvas(displayWidth, displayHeight);
+  createCanvas(550, 650);
 
   song.loop();
 
@@ -31,122 +46,71 @@ function setup() {
 
   fft = new p5.FFT();
 
-  for (let i = 0; i < num; i++) {
-    particles.push(createVector(random(width), random(height)));
-    particlesSpectrum.push(createVector(random(width), random(height)));
-  }
-
   button = createButton('play');
   button.mousePressed(togglePlaying);
-  fft = new p5.FFT();
   song.amp(0.2);
   song.pause();
-  //stroke(255);
+
+  setRules(startRule);
+
+  let total = width / w;
+  for (let i = 0; i < total; i++) {
+    cells[i] = 0;
+  }
+  cells[floor(total / 2)] = 1;
 }
 
 function draw() {
-  const randomNum = Math.round(random(1, width));
-
-  const randColor1 = color(random(0, 255), random(0, 255), random(0, 255));
-  const randColor2 = color(random(0, 255), random(0, 255), random(0, 255));
-
-  // use this background call for thejudge.mp3
-  // background(255);
-  background(0);
-  // background(0, 25);
-
-  let waveform = fft.waveform();
+  const spectrum = fft.analyze();
 
   if (song.isPlaying()) {
-    beginShape();
-    for (i = 0; i < waveform.length / 2; i++) {
-      x = map(i, 0, waveform.length, 0, displayWidth);
-      y = map(waveform[i], -1, 1, 0, displayHeight);
+    background(255);
 
-      const vertexX = map(i, 0, waveform.length, 0, width);
-      const vertexY = map(waveform[i], -1, 1, 0, height);
+    // for (let i = 0; i < spectrum.length; i++) {
+    //   xSpec = map(i, 0, spectrum.length, 0, width);
+    // }
+    ySpec = spectrum.reduce(function (avg, value, _, { length }) {
+      return avg + value / length;
+    }, 0);
+    history.push(cells);
 
-      diffY = map(waveform[i] * 2, -1, 1, 0, displayWidth);
+    if (Math.abs(prevYspec - ySpec) > 1) {
+      let nextRule = random(ruleCollection);
+      // console.log(nextRule);
+      setRules(nextRule);
+      cells[floor(cells.length / 2)] = 1;
 
-      if (i < num) {
-        let p = particles[i];
-        let n = noise(x * noiseScale, y * noiseScale, x * noiseScale * noiseScale);
-        let a = TAU * n;
+      prevYspec = ySpec;
+    }
 
-        if (frameCount % 2 === 0 && y > 630) {
-          const amplifiedX = x * 3;
-          const amplifiedY = random(0, p.y) * 2;
-          // for (let i = 1; i < height * 0.1; i++) {
-          //   p.x = x;
-          //   p.y += sin(a);
+    let cols = height / w;
+    if (history.length > cols + 1) {
+      history.splice(0, 1);
+    }
 
-          //   const amplifiedX = x * 3;
-          //   const amplifiedY = random(0, p.y) * 2;
-
-          //   if (amplifiedX > 0 && amplifiedX < displayWidth) {
-          //     // stroke(randColor1);
-          //     // old viz
-          //     // stroke(color(random(0, 255), random(0, 255), random(0, 255)));
-          //     // strokeWeight(strWeight);
-          //     // point(amplifiedX, amplifiedY);
-
-          //     //
-          //     //
-          //     // new viz
-          //     // const absDistance = Math.abs(displayWidth / 2 - y);
-
-          //     // // take distance from center of screen and scale it
-          //     // const scaledStroke = map(absDistance, 0, displayHeight / 2, 3, 10, true);
-          //     // console.log(y, absDistance, displayHeight / 2, scaledStroke);
-          //     // stroke(randColor1);
-          //     // strokeWeight(scaledStroke);
-          //     // // point(amplifiedX * 2, amplifiedY);
-          //     // point(amplifiedY * 2, amplifiedX);
-          //   }
-          //   // point(random(0, width), y);
-          // }
-          vertex(
-            randomNum % 2 === 0 ? amplifiedX : amplifiedY,
-            randomNum % 2 === 0 ? amplifiedY : amplifiedX
-          );
-        } else {
-          // old viz
-          // stroke('white');
-          // strokeWeight(4);
-          // point(p.x, p.y);
-          //
-          //
-          // new one
-          //
-          //
-          // if (p.y > height || p.y < 0) p.y = 0;
-          // p.x = x;
-          // p.y += sin(a);
-          // stroke(randColor2);
-          // strokeWeight(strWeight);
-          // // point(randomNum, p.y);
-          // // point(randomNum, p.y);
-          // point(diffY, x * 2);
-          //
-          // a more novel approach
-          if (p.y > height || p.y < 0) p.y = 0;
-          p.x = x;
-          // p.y += sin(a);
-          stroke(randColor2);
-          strokeWeight(strWeight);
-          // point(randomNum, p.y);
-          // point(randomNum, p.y);
-          // point(diffY, randomNum);
-          vertex(diffY, randomNum);
-        }
-
-        if (song.isPlaying()) {
-          p.x = map(x, 0, waveform.length, 0, width * 2);
-          p.y = y;
+    let y = 0;
+    background(255);
+    for (let cells of history) {
+      for (let i = 0; i < cells.length; i++) {
+        let x = i * w;
+        if (cells[i] == 1) {
+          // strokeWeight(1);
+          fill(0);
+          square(x, y - w, w);
         }
       }
+      y += w;
     }
-    endShape();
+
+    let nextCells = [];
+    let len = cells.length;
+    for (let i = 0; i < cells.length; i++) {
+      let left = cells[(i - 1 + len) % len];
+      let right = cells[(i + 1) % len];
+      let state = cells[i];
+      nextCells[i] = calculateState(left, state, right);
+    }
+    cells = nextCells;
   }
 }
 
@@ -159,6 +123,12 @@ function togglePlaying() {
     song.pause();
     button.html('play');
   }
+}
+
+function calculateState(a, b, c) {
+  let neighborhood = '' + a + b + c;
+  let value = 7 - parseInt(neighborhood, 2);
+  return parseInt(ruleSet[value]);
 }
 
 function windowResized() {
