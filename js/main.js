@@ -34,7 +34,7 @@ function setRules(ruleValue) {
 }
 
 function setup() {
-  createCanvas(550, 650);
+  createCanvas(windowWidth, windowHeight);
 
   song.loop();
 
