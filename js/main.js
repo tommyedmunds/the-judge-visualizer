@@ -13,7 +13,8 @@ function preload() {
 }
 
 let cells = [];
-let history = [];
+const history = [];
+
 let ruleSet;
 let w = 10;
 
@@ -34,7 +35,7 @@ function setRules(ruleValue) {
 }
 
 function setup() {
-  createCanvas(650, 800);
+  createCanvas(displayWidth, displayHeight);
 
   song.loop();
 
@@ -72,9 +73,10 @@ function draw() {
     ySpec = spectrum.reduce(function (avg, value, _, { length }) {
       return avg + value / length;
     }, 0);
+
     history.push(cells);
 
-    if (Math.abs(prevYspec - ySpec) > 1) {
+    if (Math.abs(prevYspec - ySpec) > 8) {
       let nextRule = random(ruleCollection);
       // console.log(nextRule);
       setRules(nextRule);
